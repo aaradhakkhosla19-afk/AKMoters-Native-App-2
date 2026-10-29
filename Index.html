@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AK Moters</title>
+<style>
+:root{--bg:#e6e9ee;--bg2:#f3f5f8;--fg:#0f1b2d;--mut:#4b5870;--line:rgba(15,27,45,.16);--glass:rgba(230,233,238,.8);--acc:#d62839;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1320;--bg2:#142034;--fg:#eef2f8;--mut:#9aa8bf;--line:rgba(238,242,248,.16);--glass:rgba(12,19,32,.8)}}
+:root[data-theme="dark"]{--bg:#0c1320;--bg2:#142034;--fg:#eef2f8;--mut:#9aa8bf;--line:rgba(238,242,248,.16);--glass:rgba(12,19,32,.8)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:9px;color:inherit;text-decoration:none}
+.logo i{width:14px;height:14px;background:var(--acc);border-radius:3px 9px 3px 9px;transition:background .3s}
+nav{display:flex;gap:18px}
+nav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:500}
+nav a:hover,nav a:focus-visible{color:var(--fg)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.hero{position:relative;min-height:max(600px,82svh);overflow:hidden;background:radial-gradient(70% 55% at 50% 72%,color-mix(in srgb,var(--acc) 26%,transparent),transparent),linear-gradient(var(--bg2),var(--bg))}
+#stage{position:absolute;inset:0}
+#stage canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+#stage canvas:active{cursor:grabbing}
+.fallback{padding:40vh 24px 0;text-align:center;color:var(--mut)}
+.copy{position:relative;z-index:2;padding:36px 20px 0;max-width:560px;pointer-events:none}
+h1{font-size:clamp(40px,8vw,76px);line-height:.98;letter-spacing:-.04em;margin:0 0 14px;font-weight:800}
+.copy p{margin:0 0 22px;color:var(--mut);max-width:44ch}
+.btns{display:flex;gap:10px;flex-wrap:wrap;pointer-events:auto}
+.btn{display:inline-block;padding:12px 20px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;background:var(--acc);color:#fff;transition:background .3s}
+.btn.alt{background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line)}
+.paint{position:absolute;z-index:2;left:0;right:0;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.paint div{display:flex;gap:12px;pointer-events:auto}
+.sw{width:34px;height:34px;border-radius:50%;border:0;padding:0;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);position:relative}
+.sw[aria-pressed="true"]::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--fg)}
+#cname{font-size:14px;color:var(--mut)}
+section.blk{padding:72px 20px 8px;max-width:980px;margin:0 auto}
+h2{font-size:clamp(28px,5vw,42px);letter-spacing:-.03em;line-height:1.05;margin:0 0 28px;font-weight:800}
+.row{display:grid;gap:6px 32px;padding:22px 0;border-top:1px solid var(--line)}
+.row h3{margin:0;font-size:24px;letter-spacing:-.02em}
+.row p{margin:0;color:var(--mut)}
+.row b{color:var(--fg);font-weight:600}
+@media (min-width:760px){.row{grid-template-columns:220px 1fr}.copy{padding:64px 40px 0}header{padding:14px 40px}.hero{min-height:max(640px,86svh)}}
+.feat{display:grid;gap:26px 40px}
+@media (min-width:760px){.feat{grid-template-columns:1fr 1fr}}
+.feat h3{margin:0 0 6px;font-size:19px}
+.feat p{margin:0;color:var(--mut)}
+footer{margin-top:72px;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);color:var(--mut);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+button.btn{border:0;cursor:pointer;font-family:inherit}
+.inside{position:absolute;z-index:2;left:0;right:0;bottom:16px;display:none;flex-direction:column;align-items:center;gap:10px;padding:0 16px}
+.hero.open{min-height:max(720px,92svh)}
+.hero.open .inside{display:flex}.hero.open .copy,.hero.open .paint{display:none}
+.card{background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:12px 16px;max-width:560px;width:100%}
+.card b{display:block;font-size:18px;letter-spacing:-.01em}.card p{margin:4px 0 0;color:var(--mut);font-size:15px;min-height:46px}
+.chips{display:flex;gap:8px;overflow-x:auto;max-width:100%;padding:2px 2px 6px}
+.chip{flex:none;border:0;border-radius:999px;padding:9px 15px;font:inherit;font-weight:600;font-size:14px;background:var(--glass);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--acc);color:#fff;box-shadow:none}
+.ctl{position:absolute;z-index:2;left:0;right:0;bottom:16px;display:none;flex-direction:column;align-items:center;gap:10px;padding:0 16px}
+.hero.drive{min-height:max(700px,90svh)}
+.hero.drive .ctl{display:flex}.hero.drive .copy,.hero.drive .paint,.hero.drive .inside{display:none}
+.pad{display:flex;justify-content:space-between;width:100%;max-width:560px}.pad div{display:flex;gap:10px}
+.pb{border:0;border-radius:16px;min-width:76px;min-height:64px;font:inherit;font-weight:700;font-size:16px;background:var(--glass);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.pb.on{background:var(--acc);color:#fff}
+.hint{font-size:13px;color:var(--mut)}
+.hud{position:absolute;z-index:2;top:14px;left:0;right:0;display:none;justify-content:space-between;padding:0 20px;font-weight:800;font-size:22px;letter-spacing:-.02em;pointer-events:none}
+.hero.game{min-height:max(700px,90svh)}
+.hero.game .ctl,.hero.game .hud{display:flex}.hero.game .copy,.hero.game .paint,.hero.game .inside{display:none}
+.over{position:absolute;z-index:3;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.35)}
+.over.show{display:flex}.over .card{text-align:center;max-width:340px}.over .card b{font-size:28px}.over .card p{min-height:0;margin:6px 0 14px}
+.hero.game{min-height:max(760px,100svh)}
+.menu{position:absolute;z-index:3;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45);overflow:auto}
+.menu.show{display:flex}
+.menu .card{text-align:center;max-width:380px;display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.menu .card b{font-size:26px}.menu .card p{min-height:0;margin:0}
+.mrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.chip:disabled{opacity:.4;cursor:default}
+.over .card{display:flex;flex-direction:column;gap:8px}
+.alink{background:none;border:0;color:var(--mut);font:inherit;font-size:14px;cursor:pointer;padding:0;text-decoration:underline}
+.adm{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55);overflow:auto}
+.adm.show{display:flex}
+.adm .card{max-width:440px;display:flex;flex-direction:column;gap:10px;background:var(--bg);color:var(--fg)}
+.adm input,.adm textarea,.adm select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:inherit}
+.adm label{font-size:13px;color:var(--mut);display:block;margin-bottom:3px}
+.adm .card p{min-height:0;margin:0;color:var(--mut)}.adm h3{margin:6px 0 0;font-size:16px}
+.hero.game,.hero.drive{position:fixed;inset:0;z-index:15;min-height:0;height:100vh;height:100dvh}
+body:has(.hero.game),body:has(.hero.drive){overflow:hidden}
+.hero.game .hud{top:calc(env(safe-area-inset-top,0px) + 10px);padding:0 14px}
+.hud span{background:var(--glass);padding:6px 14px;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line);font-size:18px}
+.hero.game .ctl,.hero.drive .ctl{bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+.hero.game #stage::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.4));pointer-events:none}
+@media (max-height:700px){.hero.game .hint,.hero.drive .hint{display:none}}
+.hero.ar{position:fixed;inset:0;z-index:15;min-height:0;height:100vh;height:100dvh}
+body:has(.hero.ar){overflow:hidden}
+#arv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none}
+.hero.ar #arv{display:block}.hero.ar #stage{z-index:1}
+.hero.ar .copy,.hero.ar .paint,.hero.ar .inside,.hero.ar .ctl{display:none}
+.arui{position:absolute;z-index:2;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:none;flex-direction:column;align-items:center;gap:10px;padding:0 16px}
+.hero.ar .arui{display:flex}
+.arui .hint{background:var(--glass);padding:6px 12px;border-radius:12px;text-align:center}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* AK Moters camera panel */
+.cam-panel{position:fixed;inset:0;z-index:30;background:rgba(4,8,15,.96);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px}
+.cam-panel.show{display:flex}
+.cam-panel h2{margin:0;text-align:center}
+.cam-panel p{color:var(--mut);margin:0;text-align:center}
+.cam-frame{width:min(100%,560px);max-height:60vh;aspect-ratio:3/4;background:#05080e;border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;place-items:center}
+.cam-frame video,.cam-frame img{width:100%;height:100%;object-fit:cover}
+.cam-frame img{display:none}
+.cam-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cam-status{font-size:13px;color:var(--mut);text-align:center;min-height:20px}
+
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#top"><i></i>AK Moters</a>
+  <nav aria-label="Main"><a href="#models">Models</a><a href="#why">Why AK</a><a href="#visit">Visit</a></nav>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div id="stage" role="img" aria-label="Interactive 3D car. Drag to turn it."></div><video id="arv" playsinline muted autoplay></video>
+  <div class="copy">
+    <h1>Built to be driven.</h1>
+    <p>AK Moters makes cars around the way you actually drive. Turn the car, pick a colour, then come take one out.</p>
+    <div class="btns"><a class="btn" href="#visit">Book a test drive</a><button class="btn alt" id="openbtn" type="button">Open the car</button><button class="btn alt" id="drivebtn" type="button">Drive the car</button><button class="btn alt" id="gamebtn" type="button">Play the game</button></div>
+  </div>
+  <div class="inside">
+    <div class="card"><b id="pn">Take the car apart</b><p id="pd">Tap a part to see what it does. Drag to turn the car.</p></div>
+    <div class="chips" id="chips"></div>
+    <button class="btn alt" id="closebtn" type="button">Close the car</button>
+  </div>
+  <div class="arui"><button class="btn alt" id="arx" type="button">Exit AR</button><div class="mrow"><button class="chip" id="ar1" type="button">Smaller</button><button class="chip" id="ar2" type="button">Bigger</button><button class="chip" id="ar3" type="button">Place here</button></div><span class="hint" id="arhint">For true floor placement, use Start AR on a supported Android phone in Chrome over HTTPS.</span></div>
+  <div class="hud"><span id="sc">0</span><span id="sp">0 km/h</span></div>
+  <div class="menu" id="menu"><div class="card">
+    <b>AK Racing</b><p id="mp"></p>
+    <div class="mrow"><button class="chip" id="cp" type="button">Prev</button><b id="cn" style="font-size:18px"></b><button class="chip" id="cx" type="button">Next</button></div>
+    <button class="btn alt" id="cbuy" type="button"></button>
+    <div class="mrow" id="ups"></div><div class="mrow" id="lvs"></div>
+    <button class="btn" id="go" type="button">Start</button>
+  </div></div>
+  <div class="over" id="over"><div class="card"><b id="ot">Game over</b><p id="ov"></p><button class="btn" id="again" type="button">Try again</button><button class="btn alt" id="tomenu" type="button">Menu</button></div></div>
+  <div class="ctl">
+    <button class="btn alt" id="stopbtn" type="button">Stop driving</button>
+    <div class="pad"><div><button class="pb" data-k="l" type="button">Left</button><button class="pb" data-k="r" type="button">Right</button></div><div><button class="pb" data-k="b" type="button">Back</button><button class="pb" data-k="f" type="button">Go</button></div></div>
+    <span class="hint">Hold Go to drive, Left and Right to steer. Arrow keys work too.</span>
+  </div>
+  <div class="paint">
+    <div role="group" aria-label="Paint colour">
+      <button class="sw" data-c="#d62839" title="Crimson" aria-label="Crimson" aria-pressed="true" style="background:#d62839"></button>
+      <button class="sw" data-c="#1e5bd8" title="Cobalt" aria-label="Cobalt" aria-pressed="false" style="background:#1e5bd8"></button>
+      <button class="sw" data-c="#0b6e4f" title="Racing green" aria-label="Racing green" aria-pressed="false" style="background:#0b6e4f"></button>
+      <button class="sw" data-c="#c2570c" title="Burnt orange" aria-label="Burnt orange" aria-pressed="false" style="background:#c2570c"></button>
+      <button class="sw" data-c="#3a4252" title="Graphite" aria-label="Graphite" aria-pressed="false" style="background:#3a4252"></button>
+    </div>
+    <span id="cname" aria-live="polite">Crimson. Drag the car to turn it.</span>
+    <button class="chip" id="arbtn" type="button" style="pointer-events:auto">View in your room</button>
+    <button class="chip" id="camopen" type="button" style="pointer-events:auto">Open camera</button>
+  </div>
+</section>
+
+<section class="blk" id="models">
+  <h2>Three cars, one standard.</h2>
+  <div class="row"><h3>AK Spark</h3><p><b>Compact hatchback.</b> Easy to park, easy to live with, and quick enough to make the school run fun.</p></div>
+  <div class="row"><h3>AK Volt</h3><p><b>Electric sedan.</b> Quiet, smooth and built for long commutes, with a cabin that stays calm at any speed.</p></div>
+  <div class="row"><h3>AK Roam</h3><p><b>Family SUV.</b> Higher seating, more space, and the confidence to leave the tarmac when the road does.</p></div>
+</section>
+
+<section class="blk" id="why">
+  <h2>Why people choose AK.</h2>
+  <div class="feat">
+    <div><h3>Design that holds up</h3><p>Clean lines that still look right years from now, not just on launch day.</p></div>
+    <div><h3>Power you can use</h3><p>Responsive in traffic, relaxed on the highway, efficient in both.</p></div>
+    <div><h3>Safety as standard</h3><p>The protection that matters comes on every car, not as a paid extra.</p></div>
+    <div><h3>Service that stays</h3><p>Honest pricing and a team that picks up the phone after the sale.</p></div>
+  </div>
+</section>
+
+<section class="blk" id="visit">
+  <h2>Come and drive one.</h2>
+  <p style="color:var(--mut);margin:0 0 20px;max-width:48ch">Showroom address, phone number and opening hours will be added here soon.</p>
+  <a class="btn" href="#top">Back to the cars</a>
+</section>
+</main>
+
+
+<div class="cam-panel" id="campanel" role="dialog" aria-modal="true" aria-labelledby="camtitle">
+  <h2 id="camtitle">AK Moters Camera</h2>
+  <p>Camera stays on this device. Photos are not uploaded.</p>
+  <div class="cam-frame"><video id="camvideo" autoplay playsinline muted></video><img id="camphoto" alt="Captured photo"><span id="camplaceholder">Tap Start camera to begin.</span></div>
+  <div class="cam-status" id="camstatus" role="status">Camera is off. HTTPS or localhost is required.</div>
+  <div class="cam-controls">
+    <button class="btn" id="camstart" type="button">Start camera</button>
+    <button class="btn alt" id="camswitch" type="button" disabled>Switch camera</button>
+    <button class="btn alt" id="camcapture" type="button" disabled>Take photo</button>
+    <a class="btn alt" id="camdownload" download="ak-moters-photo.jpg" style="display:none">Download photo</a>
+    <button class="btn alt" id="camclose" type="button">Close</button>
+  </div>
+</div>
+
+<footer><span>© 2026 AK Moters</span><span>Drive it before you decide.</span><button class="alink" id="adminbtn" type="button">Admin</button></footer>
+
+<div class="adm" id="adm"><div class="card">
+<div id="alogin" style="display:flex;flex-direction:column;gap:10px"><b>Admin login</b><input id="apw" type="password" placeholder="Password" autocomplete="current-password"><button class="btn" id="alb" type="button">Log in</button><p id="ae"></p></div>
+<div id="apanel" style="display:none;flex-direction:column;gap:10px"><b>Admin panel</b>
+<h3>Website text</h3>
+<div><label for="f1">Headline</label><input id="f1"></div><div><label for="f2">Intro text</label><textarea id="f2" rows="3"></textarea></div><div><label for="f3">Showroom details</label><textarea id="f3" rows="3"></textarea></div>
+<div><label for="f4">Game traffic speed</label><select id="f4"><option value=".7">Slow</option><option value="1">Normal</option><option value="1.4">Fast</option></select></div>
+<button class="btn" id="fs" type="button">Save</button>
+<h3>Game tools</h3><div class="mrow"><button class="chip" id="g1" type="button">Add 1000 points</button><button class="chip" id="g2" type="button">Unlock everything</button><button class="chip" id="g3" type="button">Reset progress</button></div>
+<h3>Change password</h3><input id="np" type="password" placeholder="New password" autocomplete="new-password"><button class="btn alt" id="npb" type="button">Set password</button>
+<p id="am">Changes are saved in this browser only.</p></div>
+<button class="btn alt" id="ax" type="button">Close</button>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var stage=document.getElementById('stage'),R;
+try{R=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){stage.innerHTML='<p class="fallback">The 3D preview isn’t supported on this device.</p>';return;}
+R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
+stage.appendChild(R.domElement);
+var S=new THREE.Scene(),C=new THREE.PerspectiveCamera(35,1,.1,300);
+S.add(new THREE.HemisphereLight(0xffffff,0x334055,.5));
+try{(function(){
+  var c0=document.createElement('canvas');c0.width=512;c0.height=256;var x0=c0.getContext('2d'),g0=x0.createLinearGradient(0,0,0,256);
+  g0.addColorStop(0,'#9db6d6');g0.addColorStop(.5,'#e8eef6');g0.addColorStop(.52,'#3a4252');g0.addColorStop(1,'#12151c');x0.fillStyle=g0;x0.fillRect(0,0,512,256);
+  x0.fillStyle='#fff';[[40,40,120,26],[220,24,150,20],[400,44,90,30]].forEach(function(r){x0.fillRect(r[0],r[1],r[2],r[3]);});
+  var t0=new THREE.CanvasTexture(c0);t0.mapping=THREE.EquirectangularReflectionMapping;t0.encoding=THREE.sRGBEncoding;
+  var pm=new THREE.PMREMGenerator(R);S.environment=pm.fromEquirectangular(t0).texture;pm.dispose();t0.dispose();
+})();}catch(e){}
+var key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(4,6,5);S.add(key);
+var l1=new THREE.PointLight(0xff5a5a,1.1,22);l1.position.set(-5,2,-4);S.add(l1);
+var l2=new THREE.PointLight(0x5a9bff,.9,22);l2.position.set(5,1,-3);S.add(l2);
+
+var rig=new THREE.Group(),car=new THREE.Group();S.add(rig);rig.add(car);
+var paint=new THREE.MeshPhysicalMaterial({color:0xd62839,metalness:.6,roughness:.3,clearcoat:1,clearcoatRoughness:.06});
+var glass=new THREE.MeshStandardMaterial({color:0x0e1622,metalness:.8,roughness:.12});
+var dark
