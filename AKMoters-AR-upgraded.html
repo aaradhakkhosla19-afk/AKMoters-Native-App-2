@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AK Moters</title>
+<style>
+:root{--bg:#e6e9ee;--bg2:#f3f5f8;--fg:#0f1b2d;--mut:#4b5870;--line:rgba(15,27,45,.16);--glass:rgba(230,233,238,.8);--acc:#d62839;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1320;--bg2:#142034;--fg:#eef2f8;--mut:#9aa8bf;--line:rgba(238,242,248,.16);--glass:rgba(12,19,32,.8)}}
+:root[data-theme="dark"]{--bg:#0c1320;--bg2:#142034;--fg:#eef2f8;--mut:#9aa8bf;--line:rgba(238,242,248,.16);--glass:rgba(12,19,32,.8)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:9px;color:inherit;text-decoration:none}
+.logo i{width:14px;height:14px;background:var(--acc);border-radius:3px 9px 3px 9px;transition:background .3s}
+nav{display:flex;gap:18px}
+nav a{color:var(--mut);text-decoration:none;font-size:14px;font-weight:500}
+nav a:hover,nav a:focus-visible{color:var(--fg)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.hero{position:relative;min-height:max(600px,82svh);overflow:hidden;background:radial-gradient(70% 55% at 50% 72%,color-mix(in srgb,var(--acc) 26%,transparent),transparent),linear-gradient(var(--bg2),var(--bg))}
+#stage{position:absolute;inset:0}
+#stage canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+#stage canvas:active{cursor:grabbing}
+.fallback{padding:40vh 24px 0;text-align:center;color:var(--mut)}
+.copy{position:relative;z-index:2;padding:36px 20px 0;max-width:560px;pointer-events:none}
+h1{font-size:clamp(40px,8vw,76px);line-height:.98;letter-spacing:-.04em;margin:0 0 14px;font-weight:800}
+.copy p{margin:0 0 22px;color:var(--mut);max-width:44ch}
+.btns{display:flex;gap:10px;flex-wrap:wrap;pointer-events:auto}
+.btn{display:inline-block;padding:12px 20px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;background:var(--acc);color:#fff;transition:background .3s}
+.btn.alt{background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line)}
+.paint{position:absolute;z-index:2;left:0;right:0;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.paint div{display:flex;gap:12px;pointer-events:auto}
+.sw{width:34px;height:34px;border-radius:50%;border:0;padding:0;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);position:relative}
+.sw[aria-pressed="true"]::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--fg)}
+#cname{font-size:14px;color:var(--mut)}
+section.blk{padding:72px 20px 8px;max-width:980px;margin:0 auto}
+h2{font-size:clamp(28px,5vw,42px);letter-spacing:-.03em;line-height:1.05;margin:0 0 28px;font-weight:800}
+.row{display:grid;gap:6px 32px;padding:22px 0;border-top:1px solid var(--line)}
+.row h3{margin:0;font-size:24px;letter-spacing:-.02em}
+.row p{margin:0;color:var(--mut)}
+.row b{color:var(--fg);font-weight:600}
+@media (min-width:760px){.row{grid-template-columns:220px 1fr}.copy{padding:64px 40px 0}header{padding:14px 40px}.hero{min-height:max(640px,86svh)}}
+.feat{display:grid;gap:26px 40px}
+@media (min-width:760px){.feat{grid-template-columns:1fr 1fr}}
+.feat h3{margin:0 0 6px;font-size:19px}
+.feat p{margin:0;color:var(--mut)}
+footer{margin-top:72px;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);color:var(--mut);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+button.btn{border:0;cursor:pointer;font-family:inherit}
+.inside{position:absolute;z-index:2;left:0;right:0;bottom:16px;display:none;flex-direction:column;align-items:center;gap:10px;padding:0 16px}
+.hero.open{min-height:max(720px,92svh)}
+.hero.open .inside{display:flex}.hero.open .copy,.hero.open .paint{display:none}
+.card{background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:12px 16px;max-width:560px;width:100%}
+.card b{display:block;font-size:18px;letter-spacing:-.01em}.card p{margin:4px 0 0;color:var(--mut);font-size:15px;min-height:46px}
+.chips{display:flex;gap:8px;overflow-x:auto;max-width:100%;padding:2px 2px 6px}
+.chip{flex:none;border:0;border-radius:999px;padding:9px 15px;font:inherit;font-weight:600;font-size:14px;background:var(--glass);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--acc);color:#fff;box-shadow:none}
+.ctl{position:absolute;z-index:2;left:0;right:0;bottom:16px;display:none;flex-direction:column;align-items:center;gap:10px;padding:0 16px}
+.hero.drive{min-height:max(700px,90svh)}
+.hero.drive .ctl{display:flex}.hero.drive .copy,.hero.drive .paint,.hero.drive .inside{display:none}
+.pad{display:flex;justify-content:space-between;width:100%;max-width:560px}.pad div{display:flex;gap:10px}
+.pb{border:0;border-radius:16px;min-width:76px;min-height:64px;font:inherit;font-weight:700;font-size:16px;background:var(--glass);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.pb.on{background:var(--acc);color:#fff}
+.hint{font-size:13px;color:var(--mut)}
+.hud{position:absolute;z-index:2;top:14px;left:0;right:0;display:none;justify-content:space-between;padding:0 20px;font-weight:800;font-size:22px;letter-spacing:-.02em;pointer-events:none}
+.hero.game{min-height:max(700px,90svh)}
+.hero.game .ctl,.hero.game .hud{display:flex}.hero.game .copy,.hero.game .paint,.hero.game .inside{display:none}
+.over{position:absolute;z-index:3;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.35)}
+.over.show{display:flex}.over .card{text-align:center;max-width:340px}.over .card b{font-size:28px}.over .card p{min-height:0;margin:6px 0 14px}
+.hero.game{min-height:max(760px,100svh)}
+.menu{position:absolute;z-index:3;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45);overflow:auto}
+.menu.show{display:flex}
+.menu .card{text-align:center;max-width:380px;display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.menu .card b{font-size:26px}.menu .card p{min-height:0;margin:0}
+.mrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.chip:disabled{opacity:.4;cursor:default}
+.over .card{display:flex;flex-direction:column;gap:8px}
+.alink{background:none;border:0;color:var(--mut);font:inherit;font-size:14px;cursor:pointer;padding:0;text-decoration:underline}
+.adm{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55);overflow:auto}
+.adm.show{display:flex}
+.adm .card{max-width:440px;display:flex;flex-direction:column;gap:10px;background:var(--bg);color:var(--fg)}
+.adm input,.adm textarea,.adm select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:inherit}
+.adm label{font-size:13px;color:var(--mut);display:block;margin-bottom:3px}
+.adm .card p{min-height:0;margin:0;color:var(--mut)}.adm h3{margin:6px 0 0;font-size:16px}
+.hero.game,.hero.drive{position:fixed;inset:0;z-index:15;min-height:0;height:100vh;height:100dvh}
+body:has(.hero.game),body:has(.hero.drive){overflow:hidden}
+.hero.game .hud{top:calc(env(safe-area-inset-top,0px) + 10px);padding:0 14px}
+.hud span{background:var(--glass);padding:6px 14px;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line);font-size:18px}
+.hero.game .ctl,.hero.drive .ctl{bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+.hero.game #stage::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.4));pointer-events:none}
+@media (max-height:700px){.hero.game .hint,.hero.drive .hint{display:none}}
+.hero.ar{position:fixed;inset:0;z-index:15;min-height:0;height:100vh;height:100dvh}
+body:has(.hero.ar){overflow:hidden}
+#arv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none}
+.hero.ar #arv{display:block}.hero.ar #stage{z-index:1}
+.hero.ar .copy,.hero.ar .paint,.hero.ar .inside,.hero.ar .ctl{display:none}
+.arui{position:absolute;z-index:2;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:none;flex-direction:column;align-items:center;gap:10px;padding:0 16px}
+.hero.ar .arui{display:flex}
+.arui .hint{background:var(--glass);padding:6px 12px;border-radius:12px;text-align:center}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* AK Moters camera panel */
+.cam-panel{position:fixed;inset:0;z-index:30;background:rgba(4,8,15,.96);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px}
+.cam-panel.show{display:flex}
+.cam-panel h2{margin:0;text-align:center}
+.cam-panel p{color:var(--mut);margin:0;text-align:center}
+.cam-frame{width:min(100%,560px);max-height:60vh;aspect-ratio:3/4;background:#05080e;border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;place-items:center}
+.cam-frame video,.cam-frame img{width:100%;height:100%;object-fit:cover}
+.cam-frame img{display:none}
+.cam-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cam-status{font-size:13px;color:var(--mut);text-align:center;min-height:20px}
+
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#top"><i></i>AK Moters</a>
+  <nav aria-label="Main"><a href="#models">Models</a><a href="#why">Why AK</a><a href="#visit">Visit</a></nav>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div id="stage" role="img" aria-label="Interactive 3D car. Drag to turn it."></div><video id="arv" playsinline muted autoplay></video>
+  <div class="copy">
+    <h1>Built to be driven.</h1>
+    <p>AK Moters makes cars around the way you actually drive. Turn the car, pick a colour, then come take one out.</p>
+    <div class="btns"><a class="btn" href="#visit">Book a test drive</a><button class="btn alt" id="openbtn" type="button">Open the car</button><button class="btn alt" id="drivebtn" type="button">Drive the car</button><button class="btn alt" id="gamebtn" type="button">Play the game</button></div>
+  </div>
+  <div class="inside">
+    <div class="card"><b id="pn">Take the car apart</b><p id="pd">Tap a part to see what it does. Drag to turn the car.</p></div>
+    <div class="chips" id="chips"></div>
+    <button class="btn alt" id="closebtn" type="button">Close the car</button>
+  </div>
+  <div class="arui"><button class="btn alt" id="arx" type="button">Exit AR</button><div class="mrow"><button class="chip" id="ar1" type="button">Smaller</button><button class="chip" id="ar2" type="button">Bigger</button><button class="chip" id="ar3" type="button">Place here</button></div><span class="hint" id="arhint">For true floor placement, use Start AR on a supported Android phone in Chrome over HTTPS.</span></div>
+  <div class="hud"><span id="sc">0</span><span id="sp">0 km/h</span></div>
+  <div class="menu" id="menu"><div class="card">
+    <b>AK Racing</b><p id="mp"></p>
+    <div class="mrow"><button class="chip" id="cp" type="button">Prev</button><b id="cn" style="font-size:18px"></b><button class="chip" id="cx" type="button">Next</button></div>
+    <button class="btn alt" id="cbuy" type="button"></button>
+    <div class="mrow" id="ups"></div><div class="mrow" id="lvs"></div>
+    <button class="btn" id="go" type="button">Start</button>
+  </div></div>
+  <div class="over" id="over"><div class="card"><b id="ot">Game over</b><p id="ov"></p><button class="btn" id="again" type="button">Try again</button><button class="btn alt" id="tomenu" type="button">Menu</button></div></div>
+  <div class="ctl">
+    <button class="btn alt" id="stopbtn" type="button">Stop driving</button>
+    <div class="pad"><div><button class="pb" data-k="l" type="button">Left</button><button class="pb" data-k="r" type="button">Right</button></div><div><button class="pb" data-k="b" type="button">Back</button><button class="pb" data-k="f" type="button">Go</button></div></div>
+    <span class="hint">Hold Go to drive, Left and Right to steer. Arrow keys work too.</span>
+  </div>
+  <div class="paint">
+    <div role="group" aria-label="Paint colour">
+      <button class="sw" data-c="#d62839" title="Crimson" aria-label="Crimson" aria-pressed="true" style="background:#d62839"></button>
+      <button class="sw" data-c="#1e5bd8" title="Cobalt" aria-label="Cobalt" aria-pressed="false" style="background:#1e5bd8"></button>
+      <button class="sw" data-c="#0b6e4f" title="Racing green" aria-label="Racing green" aria-pressed="false" style="background:#0b6e4f"></button>
+      <button class="sw" data-c="#c2570c" title="Burnt orange" aria-label="Burnt orange" aria-pressed="false" style="background:#c2570c"></button>
+      <button class="sw" data-c="#3a4252" title="Graphite" aria-label="Graphite" aria-pressed="false" style="background:#3a4252"></button>
+    </div>
+    <span id="cname" aria-live="polite">Crimson. Drag the car to turn it.</span>
+    <button class="chip" id="arbtn" type="button" style="pointer-events:auto">View in your room</button>
+    <button class="chip" id="camopen" type="button" style="pointer-events:auto">Open camera</button>
+  </div>
+</section>
+
+<section class="blk" id="models">
+  <h2>Three cars, one standard.</h2>
+  <div class="row"><h3>AK Spark</h3><p><b>Compact hatchback.</b> Easy to park, easy to live with, and quick enough to make the school run fun.</p></div>
+  <div class="row"><h3>AK Volt</h3><p><b>Electric sedan.</b> Quiet, smooth and built for long commutes, with a cabin that stays calm at any speed.</p></div>
+  <div class="row"><h3>AK Roam</h3><p><b>Family SUV.</b> Higher seating, more space, and the confidence to leave the tarmac when the road does.</p></div>
+</section>
+
+<section class="blk" id="why">
+  <h2>Why people choose AK.</h2>
+  <div class="feat">
+    <div><h3>Design that holds up</h3><p>Clean lines that still look right years from now, not just on launch day.</p></div>
+    <div><h3>Power you can use</h3><p>Responsive in traffic, relaxed on the highway, efficient in both.</p></div>
+    <div><h3>Safety as standard</h3><p>The protection that matters comes on every car, not as a paid extra.</p></div>
+    <div><h3>Service that stays</h3><p>Honest pricing and a team that picks up the phone after the sale.</p></div>
+  </div>
+</section>
+
+<section class="blk" id="visit">
+  <h2>Come and drive one.</h2>
+  <p style="color:var(--mut);margin:0 0 20px;max-width:48ch">Showroom address, phone number and opening hours will be added here soon.</p>
+  <a class="btn" href="#top">Back to the cars</a>
+</section>
+</main>
+
+
+<div class="cam-panel" id="campanel" role="dialog" aria-modal="true" aria-labelledby="camtitle">
+  <h2 id="camtitle">AK Moters Camera</h2>
+  <p>Camera stays on this device. Photos are not uploaded.</p>
+  <div class="cam-frame"><video id="camvideo" autoplay playsinline muted></video><img id="camphoto" alt="Captured photo"><span id="camplaceholder">Tap Start camera to begin.</span></div>
+  <div class="cam-status" id="camstatus" role="status">Camera is off. HTTPS or localhost is required.</div>
+  <div class="cam-controls">
+    <button class="btn" id="camstart" type="button">Start camera</button>
+    <button class="btn alt" id="camswitch" type="button" disabled>Switch camera</button>
+    <button class="btn alt" id="camcapture" type="button" disabled>Take photo</button>
+    <a class="btn alt" id="camdownload" download="ak-moters-photo.jpg" style="display:none">Download photo</a>
+    <button class="btn alt" id="camclose" type="button">Close</button>
+  </div>
+</div>
+
+<footer><span>© 2026 AK Moters</span><span>Drive it before you decide.</span><button class="alink" id="adminbtn" type="button">Admin</button></footer>
+
+<div class="adm" id="adm"><div class="card">
+<div id="alogin" style="display:flex;flex-direction:column;gap:10px"><b>Admin login</b><input id="apw" type="password" placeholder="Password" autocomplete="current-password"><button class="btn" id="alb" type="button">Log in</button><p id="ae"></p></div>
+<div id="apanel" style="display:none;flex-direction:column;gap:10px"><b>Admin panel</b>
+<h3>Website text</h3>
+<div><label for="f1">Headline</label><input id="f1"></div><div><label for="f2">Intro text</label><textarea id="f2" rows="3"></textarea></div><div><label for="f3">Showroom details</label><textarea id="f3" rows="3"></textarea></div>
+<div><label for="f4">Game traffic speed</label><select id="f4"><option value=".7">Slow</option><option value="1">Normal</option><option value="1.4">Fast</option></select></div>
+<button class="btn" id="fs" type="button">Save</button>
+<h3>Game tools</h3><div class="mrow"><button class="chip" id="g1" type="button">Add 1000 points</button><button class="chip" id="g2" type="button">Unlock everything</button><button class="chip" id="g3" type="button">Reset progress</button></div>
+<h3>Change password</h3><input id="np" type="password" placeholder="New password" autocomplete="new-password"><button class="btn alt" id="npb" type="button">Set password</button>
+<p id="am">Changes are saved in this browser only.</p></div>
+<button class="btn alt" id="ax" type="button">Close</button>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var stage=document.getElementById('stage'),R;
+try{R=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){stage.innerHTML='<p class="fallback">The 3D preview isn’t supported on this device.</p>';return;}
+R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
+stage.appendChild(R.domElement);
+var S=new THREE.Scene(),C=new THREE.PerspectiveCamera(35,1,.1,300);
+S.add(new THREE.HemisphereLight(0xffffff,0x334055,.5));
+try{(function(){
+  var c0=document.createElement('canvas');c0.width=512;c0.height=256;var x0=c0.getContext('2d'),g0=x0.createLinearGradient(0,0,0,256);
+  g0.addColorStop(0,'#9db6d6');g0.addColorStop(.5,'#e8eef6');g0.addColorStop(.52,'#3a4252');g0.addColorStop(1,'#12151c');x0.fillStyle=g0;x0.fillRect(0,0,512,256);
+  x0.fillStyle='#fff';[[40,40,120,26],[220,24,150,20],[400,44,90,30]].forEach(function(r){x0.fillRect(r[0],r[1],r[2],r[3]);});
+  var t0=new THREE.CanvasTexture(c0);t0.mapping=THREE.EquirectangularReflectionMapping;t0.encoding=THREE.sRGBEncoding;
+  var pm=new THREE.PMREMGenerator(R);S.environment=pm.fromEquirectangular(t0).texture;pm.dispose();t0.dispose();
+})();}catch(e){}
+var key=new THREE.DirectionalLight(0xffffff,1.1);key.position.set(4,6,5);S.add(key);
+var l1=new THREE.PointLight(0xff5a5a,1.1,22);l1.position.set(-5,2,-4);S.add(l1);
+var l2=new THREE.PointLight(0x5a9bff,.9,22);l2.position.set(5,1,-3);S.add(l2);
+
+var rig=new THREE.Group(),car=new THREE.Group();S.add(rig);rig.add(car);
+var paint=new THREE.MeshPhysicalMaterial({color:0xd62839,metalness:.6,roughness:.3,clearcoat:1,clearcoatRoughness:.06});
+var glass=new THREE.MeshStandardMaterial({color:0x0e1622,metalness:.8,roughness:.12});
+var dark=new THREE.MeshStandardMaterial({color:0x15171c,roughness:.6});
+var steel=new THREE.MeshStandardMaterial({color:0xcfd4dc,metalness:.9,roughness:.25});
+function ext(sh,d,b){var g=new THREE.ExtrudeGeometry(sh,{depth:d,bevelEnabled:true,bevelSize:b,bevelThickness:b,bevelSegments:3,curveSegments:24});g.translate(0,0,-d/2);return g;}
+
+var b=new THREE.Shape();
+b.moveTo(-2.2,.3);b.lineTo(-2.2,.8);b.bezierCurveTo(-2.1,.95,-1.6,1,-1.2,1);b.lineTo(1.2,1);
+b.bezierCurveTo(1.7,.98,2.2,.9,2.2,.65);b.lineTo(2.2,.3);b.closePath();
+car.add(new THREE.Mesh(ext(b,1.8,.06),paint));
+
+var c=new THREE.Shape();
+c.moveTo(-1.3,.95);c.bezierCurveTo(-1,1.3,-.8,1.5,-.4,1.52);c.lineTo(.3,1.52);c.bezierCurveTo(.7,1.5,1,1.2,1.3,.95);c.closePath();
+car.add(new THREE.Mesh(ext(c,1.5,.03),glass));
+var roof=new THREE.Mesh(new THREE.BoxGeometry(1,.06,1.54),paint);roof.position.set(-.05,1.54,0);car.add(roof);
+var split=new THREE.Mesh(new THREE.BoxGeometry(.15,.12,1.7),dark);split.position.set(2.2,.36,0);car.add(split);
+var grl=new THREE.Mesh(new THREE.BoxGeometry(.06,.2,.9),dark);grl.position.set(2.27,.62,0);car.add(grl);
+[.98,-.98].forEach(function(z){var mr=new THREE.Mesh(new THREE.BoxGeometry(.2,.1,.1),paint);mr.position.set(.75,1.02,z);car.add(mr);});
+var beam=new THREE.Mesh(new THREE.ConeGeometry(1.7,10,24,1,true),new THREE.MeshBasicMaterial({color:0xfff2c0,transparent:true,opacity:.16,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+beam.rotation.z=Math.PI/2;beam.position.set(7.2,.65,0);beam.visible=false;car.add(beam);
+
+var acc='#d62839',open=false,openT=0,sel=-1,wide=false,parts=[];
+function mk(c){return new THREE.MeshStandardMaterial({color:c,metalness:.5,roughness:.4});}
+function part(n,d,m,o){var p={name:n,desc:d,mats:m,items:[],inner:!o};parts.push(p);return p;}
+function put(p,g,x,y,z,f){g.position.set(x,y,z);g.visible=false;car.add(g);p.items.push({o:g,b:g.position.clone(),f:f});}
+function bx(m,w,h,d,x,y,z,g){var s=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);s.position.set(x,y,z);g.add(s);return s;}
+var wd=new THREE.MeshStandardMaterial({color:0x15171c,roughness:.6}),ws=new THREE.MeshStandardMaterial({color:0xcfd4dc,metalness:.9,roughness:.25});
+var m1=mk(0x8794ab),m2=mk(0x2d9c6b),m3=mk(0x59606b),m4=mk(0x3c4457),m5=mk(0x4a5468),g,i;
+var bp=part('Body shell','The painted panels, glass and doors. They shape the airflow, keep the weather out and absorb impact.',[paint,glass],true);bp.body=true;
+[1,-1].forEach(function(s){var dp=new THREE.Group();dp.position.set(.62,.66,s*.99);bx(paint,1.1,.55,.04,-.55,0,0,dp);bx(dark,.18,.04,.04,-.85,.12,s*.03,dp);car.add(dp);bp.items.push({o:dp,b:dp.position.clone(),f:[0,0,0],r:s});});
+g=new THREE.Group();bx(m1,.9,.4,.8,0,0,0,g);bx(m1,.5,.16,.5,0,.28,0,g);
+var cy=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.12,20),m1);cy.rotation.z=Math.PI/2;cy.position.set(.52,0,0);g.add(cy);
+put(part('Power unit','The engine (or electric motor) turns fuel or battery energy into the force that drives the wheels. It sits up front.',[m1]),g,1.35,.68,0,[.8,.5,0]);
+g=new THREE.Group();bx(m2,2.1,.12,1.3,0,0,0,g);for(i=-2;i<=2;i++)bx(m2,.06,.17,1.3,i*.45,0,0,g);
+put(part('Battery pack','Stores the energy. In an electric car it is a flat pack under the floor, which keeps the weight low and the car stable.',[m2]),g,0,.48,0,[0,.2,0]);
+g=new THREE.Group();[.6,-.6].forEach(function(z){bx(m3,4.2,.1,.1,0,0,z,g);});
+[-1.8,-.6,.6,1.8].forEach(function(x){bx(m3,.1,.1,1.3,x,0,0,g);});[1.35,-1.35].forEach(function(x){bx(m3,.06,.06,1.9,x,.08,0,g);});
+put(part('Chassis frame','The frame everything bolts to. Stiff rails and cross-members carry the load and protect the cabin in a crash.',[m3]),g,0,.32,0,[0,0,0]);
+g=new THREE.Group();[.15,-.85].forEach(function(x){[.4,-.4].forEach(function(z){bx(m4,.5,.14,.5,x,0,z,g);var b=bx(m4,.1,.55,.5,x-.22,.32,z,g);b.rotation.z=.15;bx(m4,.08,.14,.26,x-.27,.66,z,g);});});
+put(part('Seats','Four supportive seats with headrests. Seat belts and head restraints keep every passenger secure.',[m4]),g,0,.6,0,[0,.75,0]);
+g=new THREE.Group();var tw=new THREE.Mesh(new THREE.TorusGeometry(.17,.028,10,28),m5);tw.rotation.y=Math.PI/2;g.add(tw);
+var col=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.4,10),m5);col.rotation.z=Math.PI/2;col.position.set(.2,-.06,0);g.add(col);g.rotation.z=.3;
+put(part('Steering wheel','Turns your hands into the direction of the front wheels, and carries the horn, controls and airbag.',[m5]),g,.75,1.05,.4,[0,.9,0]);
+var m6=mk(0xaab3c2),m7=mk(0xd62839);g=new THREE.Group();
+[[1.35,.66],[1.35,-.66],[-1.35,.66],[-1.35,-.66]].forEach(function(q){var d=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.04,28),m6);d.rotation.x=Math.PI/2;d.position.set(q[0],0,q[1]);g.add(d);bx(m7,.22,.14,.12,q[0],.3,q[1],g);});
+put(part('Brakes','A steel disc on each wheel and a caliper that clamps it. Pressing the pedal squeezes the pads against the disc to slow the car.',[m6,m7]),g,0,.4,0,[0,0,0]);
+var lt=performance.now(),drv=false,hd=0,vel=0,px=0,pz=0,st=0,keys={},ctl={},km={ArrowUp:'f',w:'f',W:'f',ArrowDown:'b',s:'b',S:'b',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r'};
+var grid=new THREE.GridHelper(120,60,0x8794ab,0x8794ab);grid.material.transparent=true;grid.material.opacity=.35;grid.visible=false;S.add(grid);
+function drive(dt){
+  var th=((keys.f||ctl.f)?1:0)-((keys.b||ctl.b)?1:0),sd=((keys.l||ctl.l)?1:0)-((keys.r||ctl.r)?1:0);
+  vel+=th*7*dt;vel-=vel*(th?.3:1.4)*dt;vel=Math.max(-4,Math.min(9,vel));
+  st+=(sd*.5-st)*Math.min(1,8*dt);hd+=vel*Math.tan(st)/2.7*dt;
+  px=Math.max(-58,Math.min(58,px+Math.cos(hd)*vel*dt));pz=Math.max(-58,Math.min(58,pz-Math.sin(hd)*vel*dt));
+  car.position.set(px,0,pz);car.rotation.y=hd;
+  wheels.forEach(function(p,j){if(j<2)p.rotation.y=st;p.userData.w.rotation.y-=vel*dt/.4;});
+  var k=Math.min(1,3.5*dt),tx=px-Math.cos(hd)*7.5,tz=pz+Math.sin(hd)*7.5;
+  C.position.x+=(tx-C.position.x)*k;C.position.y+=(3.4-C.position.y)*k;C.position.z+=(tz-C.position.z)*k;
+  C.lookAt(px+Math.cos(hd)*2,1,pz-Math.sin(hd)*2);
+}
+function setDrive(v){
+  if(v&&open)setOpen(false);
+  drv=v;hero.classList.toggle('drive',v);grid.visible=v;ring.visible=!v&&!gm;if(v){document.querySelector('.hint').textContent='Hold Go to drive, Left and Right to steer. Arrow keys work too.';document.getElementById('stopbtn').textContent='Stop driving';}
+  keys={};ctl={};vel=0;px=pz=hd=st=0;
+  if(v){rig.position.x=0;}else{car.position.set(0,0,0);wheels.forEach(function(p){p.rotation.y=0;});fit();}
+}
+var gm=false,gs='off',gx=0,gz=0,gv=11,gl=0,best=0,gt=[],gtr=[],LZ=[-3.6,-1.2,1.2,3.6],LS=[7.5,6,5,6.5];
+var gw=new THREE.Group();gw.visible=false;S.add(gw);
+(function(){
+  var c2=document.createElement('canvas');c2.width=c2.height=128;var x2=c2.getContext('2d');
+  x2.fillStyle='#2b2f36';x2.fillRect(0,0,128,128);x2.fillStyle='#e8e8e8';
+  [1,2,3].forEach(function(n){x2.fillRect(0,n*32-2,64,4);});x2.fillRect(0,0,128,4);x2.fillRect(0,124,128,4);
+  var t=new THREE.CanvasTexture(c2);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(50,1);t.anisotropy=4;
+  var rd=new THREE.Mesh(new THREE.PlaneGeometry(400,9.6),new THREE.MeshBasicMaterial({map:t}));rd.rotation.x=-Math.PI/2;rd.position.y=.005;gw.add(rd);
+  var gnd=new THREE.Mesh(new THREE.PlaneGeometry(700,700),new THREE.MeshBasicMaterial({color:0x4d6148}));gnd.rotation.x=-Math.PI/2;gnd.position.y=-.01;gw.add(gnd);
+  gw.userData={rd:rd,gnd:gnd,t:t};
+  var tm=new THREE.MeshBasicMaterial({color:0x2f4a2c}),tk=new THREE.MeshBasicMaterial({color:0x5a4332}),g1=new THREE.CylinderGeometry(.15,.2,1,6),g2=new THREE.ConeGeometry(1,2.6,8);
+  for(var n=0;n<18;n++){var tr=new THREE.Group(),a=new THREE.Mesh(g1,tk),b2=new THREE.Mesh(g2,tm);a.position.y=.5;b2.position.y=2.2;tr.add(a,b2);
+    tr.userData.x0=(n>>1)*16-24;tr.position.set(tr.userData.x0,0,(n%2?1:-1)*(6.5+(n%3)*.8));gw.add(tr);gtr.push(tr);}
+  var pal=['#e9c46a','#2a9d8f','#8d99ae','#f4a261','#e5e5e5','#6d597a','#457b9d','#bc4749'];
+  var gb=new THREE.BoxGeometry(4.3,.55,1.8),gc=new THREE.BoxGeometry(2,.5,1.5),gwl=new THREE.CylinderGeometry(.38,.38,.3,16),gli=new THREE.BoxGeometry(.1,.12,.4),red=new THREE.MeshBasicMaterial({color:0xff2a2a});
+  var bT=(function(){var c=document.createElement('canvas');c.width=c.height=64;var x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(0,0,0,.6)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+  pal.forEach(function(col,ix){
+    var g=new THREE.Group(),m=new THREE.MeshStandardMaterial({color:col,metalness:.85,roughness:.25});
+    var a=new THREE.Mesh(gb,m);a.position.y=.6;g.add(a);var cb=new THREE.Mesh(gc,glass);cb.position.set(-.2,1.1,0);g.add(cb);
+    [[1.3,.85],[1.3,-.85],[-1.3,.85],[-1.3,-.85]].forEach(function(p){var w=new THREE.Mesh(gwl,dark);w.rotation.x=Math.PI/2;w.position.set(p[0],.38,p[1]);g.add(w);});
+    [.6,-.6].forEach(function(z){var tl=new THREE.Mesh(gli,red);tl.position.set(-2.17,.7,z);g.add(tl);});
+    var bl=new THREE.Mesh(new THREE.PlaneGeometry(5.6,2.8),new THREE.MeshBasicMaterial({map:bT,transparent:true,depthWrite:false}));bl.rotation.x=-Math.PI/2;bl.position.y=.02;g.add(bl);
+    if(ix%3===2)g.scale.y=1.35;g.visible=false;gw.add(g);gt.push({g:g,x:0,l:0});
+  });
+})();
+function spawn(c,first){
+  for(var n=0;n<8;n++){
+    var l=Math.floor(Math.random()*4),x=gx+(first?25+Math.random()*130:70+Math.random()*90),ok=true;
+    gt.forEach(function(o){if(o!==c&&o.l===l&&Math.abs(o.x-x)<22)ok=false;});
+    if(ok){c.l=l;c.x=x;return;}
+  }
+  c.l=Math.floor(Math.random()*4);c.x=gx+200;
+}
+function rst(){
+  gs='play';gx=0;gz=0;gv=11;gl=0;keys={};ctl={};
+  gt.forEach(function(c){c.x=-1e9;c.l=-1;});gt.forEach(function(c){spawn(c,true);});gt.forEach(function(c,i){if(i>=4+lv){c.l=-1;c.x=-1e9;}});
+  gtr.forEach(function(t){t.position.x=t.userData.x0;});
+}
+function over(){
+  if(gs!=='play')return;gs='over';gv=0;var s=Math.floor(gx/6);best=Math.max(best,s);pts+=s;save();snd(2);
+  document.getElementById('ot').textContent='Game over';document.getElementById('ov').textContent='Score '+s+'. Total points '+pts+'.';document.getElementById('again').textContent='Try again';document.getElementById('over').classList.add('show');
+}
+var pz2=0;
+function game(dt){
+  if(gs==='play'){
+    var th=((keys.f||ctl.f)?1:0)-((keys.b||ctl.b)?1:0),sd=((keys.l||ctl.l)?1:0)-((keys.r||ctl.r)?1:0),base=11+Math.min(8,gx/1500)+lv*1.5;
+    gv+=((th>0?base+14+up.e*2.5+cs.spd:th<0?4:base)-gv)*Math.min(1,(th?1.4+(th<0?up.b*.4:0):.8)*dt);
+    gl+=(sd-gl)*Math.min(1,10*dt);
+    gx+=gv*dt;gz=Math.max(-3.8,Math.min(3.8,gz-gl*(7+up.h*.8+cs.hnd)*dt));
+    gt.forEach(function(c){
+      if(c.l<0)return;c.x+=LS[c.l]*dt*(1+.1*lv)*tsp;if(c.x<gx-30)spawn(c,false);
+      if(Math.abs(c.x-gx)<4.2&&Math.abs(LZ[c.l]-gz)<1.65)over();
+    });
+    document.getElementById('sc').textContent='Level '+(lv+1)+'  '+Math.floor(gx/6)+' / '+GL[lv];if(gx/6>=GL[lv])win();if(osc)osc.frequency.value=50+gv*6;document.getElementById('sp').textContent=Math.round(gv*5)+' km/h';
+  }
+  gt.forEach(function(c){c.g.visible=c.l>=0;c.g.position.set(c.x,0,LZ[c.l]||0);});
+  car.position.set(gx,0,gz);pz2+=((th||0)*.02-pz2)*.08;car.rotation.set(gl*.04,gl*.18,pz2);
+  wheels.forEach(function(p,j){if(j<2)p.rotation.y=gl*.4;p.userData.w.rotation.y-=gv*dt/.4;});
+  gw.userData.rd.position.x=gx;gw.userData.gnd.position.x=gx;gw.userData.t.offset.x=gx/8;
+  gtr.forEach(function(t){if(t.position.x<gx-30)t.position.x+=144;});
+  gH.forEach(function(h){if(h.position.x<gx-120)h.position.x+=360;});gw.userData.gr.forEach(function(p){p.position.x=gx;});gw.userData.gt2.offset.x=gx/4;
+  var k=Math.min(1,4*dt);C.position.x+=(gx-8.5-C.position.x)*k;C.position.y+=(3.6-C.position.y)*k;C.position.z+=(gz*.6-C.position.z)*k;
+  C.fov+=(35+gv*.2-C.fov)*.05;C.updateProjectionMatrix();C.lookAt(gx+7,.8,gz*.5);
+}
+var CARS=[{n:'AK Spark',c:'#d62839',sx:1,sy:1,spd:0,hnd:0,p:0},{n:'BMW M',c:'#1c69d4',sx:1.04,sy:.94,spd:2,hnd:1,p:400},{n:'Mercedes AMG',c:'#b9c0ca',sx:1.1,sy:1,spd:3,hnd:0,p:700},{n:'Ferrari',c:'#e10600',sx:1.05,sy:.84,spd:6,hnd:2,p:1200}];
+var GL=[120,200,280,360,450],pts=0,own=[1,0,0,0],cur=0,vw=0,lv=0,lvmax=0,up={e:0,b:0,h:0},cs=CARS[0],ac,osc,og;
+function save(){try{localStorage.setItem('akm',JSON.stringify({pts:pts,own:own,cur:cur,up:up,lvmax:lvmax}));}catch(e){}}
+try{var d0=JSON.parse(localStorage.getItem('akm')||'null');if(d0){pts=d0.pts|0;own=d0.own||own;cur=d0.cur|0;up=d0.up||up;lvmax=d0.lvmax|0;}}catch(e){}
+function snd(m){
+  try{
+    if(m===1){ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+      if(!osc){osc=ac.createOscillator();og=ac.createGain();osc.type='sawtooth';osc.frequency.value=60;osc.connect(og);og.connect(ac.destination);osc.start();}og.gain.value=.025;}
+    else if(m===0){if(og)og.gain.value=0;}
+    else if(m===2&&ac){og.gain.value=0;var n=ac.sampleRate*.4,b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);for(var q=0;q<n;q++)d[q]=(Math.random()*2-1)*(1-q/n);
+      var s=ac.createBufferSource(),g=ac.createGain();g.gain.value=.4;s.buffer=b;s.connect(g);g.connect(ac.destination);s.start();}
+  }catch(e){}
+}
+function rm(){
+  var K=CARS[vw],E=function(id){return document.getElementById(id);};sky(true);
+  paint.color.set(K.c);car.scale.set(K.sx,K.sy,1);
+  E('mp').textContent='Points: '+pts;E('cn').textContent=K.n;
+  E('cbuy').textContent=own[vw]?(vw===cur?'Selected':'Select this car'):'Buy for '+K.p+' points';E('cbuy').disabled=!own[vw]&&pts<K.p;
+  var u=E('ups');u.innerHTML='';
+  [['e','Engine'],['b','Brakes'],['h','Handling']].forEach(function(a){var n=up[a[0]],b=document.createElement('button');b.className='chip';b.type='button';
+    b.textContent=a[1]+' '+n+'/5'+(n<5?' ('+100*(n+1)+')':'');b.disabled=n>=5||pts<100*(n+1);
+    b.onclick=function(){pts-=100*(up[a[0]]+1);up[a[0]]++;save();rm();};u.appendChild(b);});
+  var l=E('lvs');l.innerHTML='';
+  for(var n=0;n<5;n++)(function(n){var b=document.createElement('button');b.className='chip';b.type='button';b.textContent='Level '+(n+1);b.setAttribute('aria-pressed',n===lv?'true':'false');b.disabled=n>lvmax;b.onclick=function(){lv=n;rm();};l.appendChild(b);})(n);
+  E('go').textContent='Start level '+(lv+1);
+}
+function menu(v){
+  document.getElementById('menu').classList.toggle('show',v);document.getElementById('over').classList.remove('show');
+  if(!v)return;
+  gs='menu';gv=0;gx=0;gz=0;snd(0);gt.forEach(function(c){c.l=-1;c.x=-1e9;});vw=cur;rm();
+}
+function startLevel(){sky(true);
+  cs=CARS[cur];paint.color.set(cs.c);car.scale.set(cs.sx,cs.sy,1);
+  document.getElementById('menu').classList.remove('show');document.getElementById('over').classList.remove('show');rst();snd(1);
+}
+function win(){
+  if(gs!=='play')return;gs='won';gv=0;snd(0);
+  var b=Math.floor(gx/6)+50*(lv+1);pts+=b;lvmax=Math.max(lvmax,Math.min(4,lv+1));save();
+  document.getElementById('ot').textContent='Level '+(lv+1)+' complete';
+  document.getElementById('ov').textContent='You earned '+b+' points. Total '+pts+'.';
+  document.getElementById('again').textContent=lv<4?'Next level':'Play again';
+  document.getElementById('over').classList.add('show');
+}
+var gH=[];
+(function(){
+  var im=gw.userData.t.image,x=im.getContext('2d');
+  for(var n=0;n<1200;n++){x.fillStyle=n%2?'rgba(255,255,255,'+Math.random()*.08+')':'rgba(0,0,0,'+Math.random()*.12+')';x.fillRect(Math.random()*128,Math.random()*128,1+Math.random()*2,1);}
+  x.fillStyle='rgba(0,0,0,.2)';[16,48,80,112].forEach(function(c){x.fillRect(0,c-9,128,5);x.fillRect(0,c+4,128,5);});
+  gw.userData.t.needsUpdate=true;
+  var c=document.createElement('canvas');c.width=c.height=64;var x2=c.getContext('2d'),g=x2.createLinearGradient(0,14,0,32);
+  g.addColorStop(0,'#e9edf2');g.addColorStop(.5,'#9aa3ae');g.addColorStop(1,'#d3d9e0');x2.fillStyle=g;x2.fillRect(0,14,64,18);x2.fillStyle='#5c6470';x2.fillRect(28,10,8,54);
+  var t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;t.repeat.set(100,1);t.anisotropy=4;
+  var m=new THREE.MeshBasicMaterial({map:t,transparent:true,alphaTest:.5,side:THREE.DoubleSide});
+  gw.userData.gt2=t;gw.userData.rlm=m;gw.userData.gr=[];
+  [5.15,-5.15].forEach(function(z){var p=new THREE.Mesh(new THREE.PlaneGeometry(400,1),m);p.position.set(0,.55,z);gw.add(p);gw.userData.gr.push(p);});
+  var hm=new THREE.MeshBasicMaterial({color:0x4b6a57}),hg=new THREE.SphereGeometry(28,8,6);gw.userData.hm=hm;
+  for(var q=0;q<12;q++){var h=new THREE.Mesh(hg,hm);h.scale.y=.55;h.position.set((q>>1)*60-80+(q%2)*25,-6,(q%2?1:-1)*(85+(q%3)*18));gw.add(h);gH.push(h);}
+})();
+var SKY=[['#6fa8dc','#cfe3f3',1],['#6fa8dc','#cfe3f3',1],['#3d5a80','#f4b183',.85],['#0a1024','#27324f',.45],['#04060f','#161c33',.35]];
+function sky(on){
+  if(!on){S.background=null;S.fog=null;beam.visible=false;R.toneMappingExposure=1.05;return;}
+  var s=SKY[lv],c3=document.createElement('canvas');c3.width=256;c3.height=256;var x3=c3.getContext('2d'),g3=x3.createLinearGradient(0,0,0,256);
+  g3.addColorStop(0,s[0]);g3.addColorStop(.62,s[1]);g3.addColorStop(1,s[1]);x3.fillStyle=g3;x3.fillRect(0,0,256,256);var rg=x3.createRadialGradient(190,150,2,190,150,70);rg.addColorStop(0,lv>=3?'rgba(230,235,255,.9)':'rgba(255,244,200,.95)');rg.addColorStop(1,'rgba(255,255,255,0)');x3.fillStyle=rg;x3.fillRect(0,0,256,256);
+  var t3=new THREE.CanvasTexture(c3);t3.encoding=THREE.sRGBEncoding;S.background=t3;S.fog=new THREE.Fog(s[1],45,170);
+  gw.userData.rd.material.color.setScalar(s[2]);gw.userData.gnd.material.color.set(0x4d6148).multiplyScalar(s[2]);beam.visible=lv>=3;R.toneMappingExposure=lv>=3?.7:1.05;gw.userData.hm.color.set(0x4b6a57).multiplyScalar(s[2]);gw.userData.rlm.color.setScalar(s[2]);
+}
+var ADM={pw:'AK@2026',h:'',i:'',v:'',t:1},tsp=1;
+try{var a0=JSON.parse(localStorage.getItem('akadm')||'null');if(a0)for(var k0 in a0)ADM[k0]=a0[k0];}catch(e){}
+var H1=document.querySelector('h1'),HP=document.querySelector('.copy p'),VP=document.querySelector('#visit p'),DF=[H1.textContent,HP.textContent,VP.textContent];
+function applyA(){H1.textContent=ADM.h||DF[0];HP.textContent=ADM.i||DF[1];VP.textContent=ADM.v||DF[2];tsp=+ADM.t||1;}
+applyA();
+function sa(){try{localStorage.setItem('akadm',JSON.stringify(ADM));}catch(e){}}
+var $=function(id){return document.getElementById(id);};
+$('adminbtn').onclick=function(){$('adm').classList.add('show');};
+$('ax').onclick=function(){$('adm').classList.remove('show');$('apanel').style.display='none';$('alogin').style.display='flex';$('apw').value='';$('ae').textContent='';};
+$('alb').onclick=function(){
+  if($('apw').value===ADM.pw){$('alogin').style.display='none';$('apanel').style.display='flex';$('f1').value=ADM.h||DF[0];$('f2').value=ADM.i||DF[1];$('f3').value=ADM.v||DF[2];$('f4').value=String(tsp);}
+  else $('ae').textContent='Wrong password.';
+};
+$('fs').onclick=function(){ADM.h=$('f1').value;ADM.i=$('f2').value;ADM.v=$('f3').value;ADM.t=+$('f4').value;sa();applyA();$('am').textContent='Saved.';};
+$('g1').onclick=function(){pts+=1000;save();$('am').textContent='Added 1000 points. Total '+pts+'.';};
+$('g2').onclick=function(){own=[1,1,1,1];lvmax=4;save();$('am').textContent='All cars and levels unlocked.';};
+$('g3').onclick=function(){pts=0;own=[1,0,0,0];cur=0;up={e:0,b:0,h:0};lvmax=0;lv=0;save();$('am').textContent='Game progress reset.';};
+$('npb').onclick=function(){if($('np').value.length>=4){ADM.pw=$('np').value;sa();$('np').value='';$('am').textContent='Password changed.';}else $('am').textContent='Use at least 4 characters.';};
+var ar=false,a0=null,oa=null,xrSession=null,xrHitSource=null,xrReticle=null,xrPlaced=false,AE=new THREE.Euler(),Q1=new THREE.Quaternion(-Math.sqrt(.5),0,0,Math.sqrt(.5)),Q0=new THREE.Quaternion(),Qt=new THREE.Quaternion(),ZA=new THREE.Vector3(0,0,1),arS=.45,arStream=null;
+function oh(e){if(e.alpha==null)return;if(a0==null)a0=e.alpha;oa={a:e.alpha,b:e.beta,g:e.gamma};}
+function arUpdate(){
+  if(oa){var d=Math.PI/180,o=(screen.orientation?screen.orientation.angle:(window.orientation||0))*d;
+    AE.set(oa.b*d,(oa.a-a0)*d,-oa.g*d,'YXZ');Qt.setFromEuler(AE).multiply(Q1).multiply(Q0.setFromAxisAngle(ZA,-o));C.quaternion.slerp(Qt,.3);}
+  C.position.set(0,0,0);
+}
+function arPlace(){var d=new THREE.Vector3();C.getWorldDirection(d);d.y=0;if(d.lengthSq()<1e-4)d.set(0,0,-1);d.normalize();rig.position.set(d.x*3.6,-1.4,d.z*3.6);}
+
+function makeXRReticle(){
+  if(xrReticle)return xrReticle;
+  xrReticle=new THREE.Mesh(
+    new THREE.RingGeometry(.12,.16,32),
+    new THREE.MeshBasicMaterial({color:0x42d392,side:THREE.DoubleSide})
+  );
+  xrReticle.rotation.x=-Math.PI/2;
+  xrReticle.matrixAutoUpdate=false;
+  xrReticle.visible=false;
+  S.add(xrReticle);
+  return xrReticle;
+}
+async function startTrueAR(){
+  if(!navigator.xr || !navigator.xr.isSessionSupported){
+    $('arhint').textContent='True AR is not supported in this browser. Use a supported Android phone and Chrome over HTTPS.';
+    setAR(true); return;
+  }
+  try{
+    var supported=await navigator.xr.isSessionSupported('immersive-ar');
+    if(!supported){
+      $('arhint').textContent='This device/browser does not support immersive AR. Opening camera-overlay preview instead.';
+      setAR(true); return;
+    }
+    xrSession=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:['hit-test'],
+      optionalFeatures:['dom-overlay'],
+      domOverlay:{root:document.body}
+    });
+    R.xr.enabled=true;
+    await R.xr.setSession(xrSession);
+    ar=true;xrPlaced=false;hero.classList.add('ar');
+    ring.visible=false;plat.visible=false;
+    makeXRReticle().visible=false;
+    $('arhint').textContent='Move your phone slowly to find a floor. Aim at the green ring and tap Place here.';
+    var viewerSpace=await xrSession.requestReferenceSpace('viewer');
+    xrHitSource=await xrSession.requestHitTestSource({space:viewerSpace});
+    var localSpace=await xrSession.requestReferenceSpace('local');
+    R.setAnimationLoop(function(time,frame){
+      if(frame && xrHitSource && !xrPlaced){
+        var hits=frame.getHitTestResults(xrHitSource);
+        if(hits.length){
+          var pose=hits[0].getPose(localSpace);
+          if(pose){
+            xrReticle.visible=true;
+            xrReticle.matrix.fromArray(pose.transform.matrix);
+          }
+        }else if(xrReticle) xrReticle.visible=false;
+      }
+      R.render(S,C);
+    });
+    xrSession.addEventListener('end',function(){
+      xrSession=null;xrHitSource=null;R.setAnimationLoop(null);
+      R.xr.enabled=false;ar=false;hero.classList.remove('ar');
+      if(xrReticle)xrReticle.visible=false;
+      ring.visible=true;plat.visible=true;
+      fit();
+      // Resume the page's ordinary renderer loop.
+      requestAnimationFrame(loop);
+    });
+  }catch(e){
+    xrSession=null;
+    $('arhint').textContent='Could not start true AR ('+(e.message||e.name)+'). Check HTTPS, camera permissions, and device support.';
+    setAR(true);
+  }
+}
+
+function setAR(v){
+  if(v===ar)return;
+  if(v){
+    var perm=(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission)?DeviceOrientationEvent.requestPermission().catch(function(){}):Promise.resolve();
+    var cam=(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}):Promise.reject();
+    Promise.all([perm,cam]).then(function(r){
+      arStream=r[1];var vd=$('arv');vd.srcObject=arStream;vd.play().catch(function(){});
+      ar=true;a0=null;oa=null;hero.classList.add('ar');ring.visible=false;C.fov=62;C.updateProjectionMatrix();
+      rig.scale.setScalar(arS);rig.position.set(0,-1.4,-3.6);window.addEventListener('deviceorientation',oh);
+    }).catch(function(){$('cname').textContent='Camera is not available here. Open the page in your phone browser and allow camera access.';});
+  }else{
+    ar=false;hero.classList.remove('ar');window.removeEventListener('deviceorientation',oh);
+    if(arStream){arStream.getTracks().forEach(function(t){t.stop();});arStream=null;}
+    rig.scale.setScalar(1);rig.position.set(0,0,0);ring.visible=true;C.fov=35;fit();
+  }
+}
+$('arbtn').onclick=function(){startTrueAR();};
+
+// Optional direct camera preview/photo capture, separate from the room-view AR mode.
+(function(){
+  var panel=$('campanel'), video=$('camvideo'), photo=$('camphoto'), placeholder=$('camplaceholder'),
+      status=$('camstatus'), start=$('camstart'), sw=$('camswitch'), capture=$('camcapture'),
+      close=$('camclose'), download=$('camdownload'), stream=null, facing='environment', photoUrl=null;
+  function say(t){status.textContent=t;}
+  function stop(){
+    if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;}
+    video.srcObject=null; video.style.display='none'; placeholder.style.display='block';
+    start.disabled=false;sw.disabled=true;capture.disabled=true;
+  }
+  $('camopen').onclick=function(){panel.classList.add('show');};
+  close.onclick=function(){stop();panel.classList.remove('show');};
+  start.onclick=async function(){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){say('Camera access needs HTTPS and a modern browser.');return;}
+    stop();
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:facing}}});
+      video.srcObject=stream;video.style.display='block';placeholder.style.display='none';
+      await video.play();start.disabled=true;sw.disabled=false;capture.disabled=false;
+      say('Camera is running. Tap Take photo to capture.');
+    }catch(e){
+      var m='Could not access camera.';
+      if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError')m='Camera permission was denied. Allow camera access in browser settings.';
+      else if(e.name==='NotFoundError')m='No camera was found on this device.';
+      else if(e.name==='NotReadableError')m='Camera may be in use by another app.';
+      say(m);
+    }
+  };
+  sw.onclick=function(){facing=facing==='environment'?'user':'environment';start.click();};
+  capture.onclick=function(){
+    if(!stream||!video.videoWidth){say('Wait for the camera preview to appear.');return;}
+    var c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;
+    c.getContext('2d').drawImage(video,0,0,c.width,c.height);
+    if(photoUrl)URL.revokeObjectURL(photoUrl);
+    c.toBlob(function(blob){
+      if(!blob){say('Could not capture photo.');return;}
+      photoUrl=URL.createObjectURL(blob);photo.src=photoUrl;photo.style.display='block';
+      download.href=photoUrl;download.style.display='inline-block';say('Photo captured on this device.');
+    },'image/jpeg',.92);
+  };
+  window.addEventListener('pagehide',stop);
+})();
+
+$('arx').onclick=function(){
+  if(xrSession){xrSession.end().catch(function(){});}
+  else setAR(false);
+};
+$('ar3').onclick=function(){
+  if(xrSession && xrReticle && xrReticle.visible){
+    rig.position.setFromMatrixPosition(xrReticle.matrix);
+    rig.quaternion.setFromRotationMatrix(xrReticle.matrix);
+    rig.scale.setScalar(arS*.22);
+    xrPlaced=true;xrReticle.visible=false;
+    $('arhint').textContent='Car placed. Walk around it carefully. Tap Place here again only after restarting AR to reposition.';
+  }else if(ar){arPlace();$('arhint').textContent='Car moved to the current preview position.';}
+};
+$('ar1').onclick=function(){arS=Math.max(.15,arS*.8);if(xrPlaced)rig.scale.setScalar(arS*.22);else if(ar)rig.scale.setScalar(arS);};
+$('ar2').onclick=function(){arS=Math.min(1.2,arS*1.25);if(xrPlaced)rig.scale.setScalar(arS*.22);else if(ar)rig.scale.setScalar(arS);};
+$('ar1').onclick=function(){arS=Math.max(.15,arS/1.25);rig.scale.setScalar(arS);};
+$('ar2').onclick=function(){arS=Math.min(2.5,arS*1.25);rig.scale.setScalar(arS);};
+$('ar3').onclick=function(){arPlace();};
+function setGame(v){
+  if(v&&open)setOpen(false);
+  if(v&&drv)setDrive(false);
+  gm=v;hero.classList.toggle('game',v);gw.visible=v;ring.visible=!v&&!drv;
+  document.getElementById('over').classList.remove('show');
+  if(v){rig.position.x=0;menu(true);document.querySelector('.hint').textContent='Stay clear of other cars. Go speeds up, Back slows down.';document.getElementById('stopbtn').textContent='Exit game';}
+  else{menu(false);snd(0);sky(false);car.scale.set(1,1,1);paint.color.set(acc);C.fov=35;gs='off';gv=0;car.position.set(0,0,0);car.rotation.y=0;wheels.forEach(function(p){p.rotation.y=0;});fit();}
+}
+var wheels=[],wp=part('Wheels and tyres','Tyres grip the road, the rims carry the load, and the brakes behind them bring the car to a stop.',[wd,ws],true);
+function step(){
+  var now=performance.now(),dt=Math.min((now-lt)/1000,.05);lt=now;plat.visible=ring.visible;if(ar)arUpdate();if(drv)drive(dt);if(gm)game(dt);
+  openT+=((open?1:0)-openT)*.08;var e=openT*openT*(3-2*openT);
+  rig.position.x+=((ar?rig.position.x:wide&&!open&&!drv&&!gm?1.7:0)-rig.position.x)*.08;
+  parts.forEach(function(p,j){
+    p.items.forEach(function(it){it.o.position.set(it.b.x+it.f[0]*e,it.b.y+it.f[1]*e,it.b.z+it.f[2]*e);if(p.inner)it.o.visible=openT>.02;if(it.r)it.o.rotation.y=it.r*e;});
+    var t=1;if(p.body)t=open?(sel===j?.5:.12):1;else if(sel>=0&&sel!==j)t=.25;
+    p.mats.forEach(function(m){m.opacity+=(t-m.opacity)*.15;m.transparent=m.opacity<.99;m.depthWrite=m.opacity>.55;m.emissive.set(acc);m.emissiveIntensity=sel===j?.45:0;});
+  });
+}
+var hero=document.querySelector('.hero'),chips=document.getElementById('chips'),pn=document.getElementById('pn'),pd=document.getElementById('pd'),idle=pd.textContent;
+function pick(j){sel=sel===j?-1:j;for(var q=0;q<chips.children.length;q++)chips.children[q].setAttribute('aria-pressed',q===sel?'true':'false');pn.textContent=sel<0?'Take the car apart':parts[sel].name;pd.textContent=sel<0?idle:parts[sel].desc;}
+parts.forEach(function(p,j){var b=document.createElement('button');b.className='chip';b.type='button';b.textContent=p.name;b.setAttribute('aria-pressed','false');b.onclick=function(){pick(j);};chips.appendChild(b);});
+function setOpen(v){open=v;hero.classList.toggle('open',v);if(!v&&sel>=0)pick(sel);}
+document.getElementById('openbtn').onclick=function(){setOpen(true);};
+document.getElementById('closebtn').onclick=function(){setOpen(false);};
+document.getElementById('drivebtn').onclick=function(){setDrive(true);};
+document.getElementById('stopbtn').onclick=function(){if(gm)setGame(false);else setDrive(false);};
+document.getElementById('gamebtn').onclick=function(){setGame(true);};
+document.getElementById('again').onclick=function(){if(gs==='won'&&lv<4)lv++;startLevel();};
+document.getElementById('tomenu').onclick=function(){menu(true);};
+document.getElementById('cp').onclick=function(){vw=(vw+3)%4;rm();};
+document.getElementById('cx').onclick=function(){vw=(vw+1)%4;rm();};
+document.getElementById('cbuy').onclick=function(){if(own[vw])cur=vw;else if(pts>=CARS[vw].p){pts-=CARS[vw].p;own[vw]=1;cur=vw;}save();rm();};
+document.getElementById('go').onclick=function(){if(own[vw])cur=vw;save();startLevel();};
+document.querySelectorAll('.pb').forEach(function(b){var k=b.dataset.k;
+  b.addEventListener('pointerdown',function(e){e.preventDefault();ctl[k]=1;b.classList.add('on');});
+  ['pointerup','pointerleave','pointercancel'].forEach(function(n){b.addEventListener(n,function(){ctl[k]=0;b.classList.remove('on');});});
+  b.addEventListener('contextmenu',function(e){e.preventDefault();});});
+window.addEventListener('keydown',function(e){var k=km[e.key];if(k&&(drv||gm)){keys[k]=1;e.preventDefault();}});
+window.addEventListener('keyup',function(e){var k=km[e.key];if(k)keys[k]=0;});
+var tyre=new THREE.CylinderGeometry(.4,.4,.3,32),rimG=new THREE.CylinderGeometry(.26,.26,.32,24),spk=new THREE.BoxGeometry(.5,.34,.05);
+[[1.35,.86],[1.35,-.86],[-1.35,.86],[-1.35,-.86]].forEach(function(p){
+  var w=new THREE.Group();
+  w.add(new THREE.Mesh(tyre,wd),new THREE.Mesh(rimG,ws));
+  for(var i=0;i<5;i++){var s=new THREE.Mesh(spk,wd);s.rotation.y=i*Math.PI/5;w.add(s);}
+  w.rotation.x=Math.PI/2;var pv=new THREE.Group();pv.add(w);pv.position.set(p[0],.4,p[1]);pv.userData.w=w;car.add(pv);wheels.push(pv);wp.items.push({o:pv,b:pv.position.clone(),f:[0,0,p[1]>0?.6:-.6]});
+});
+function lm(h){return new THREE.MeshBasicMaterial({color:h});}
+[.62,-.62].forEach(function(z){
+  var h=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,.4),lm(0xfff4d6));h.position.set(2.22,.72,z);car.add(h);
+  var t=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.38),lm(0xff2a2a));t.position.set(-2.22,.78,z);car.add(t);
+});
+
+var cv=document.createElement('canvas');cv.width=cv.height=128;
+var cx=cv.getContext('2d'),gr=cx.createRadialGradient(64,64,0,64,64,64);
+gr.addColorStop(0,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=gr;cx.fillRect(0,0,128,128);
+var sh=new THREE.Mesh(new THREE.PlaneGeometry(7,3.6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthWrite:false}));
+sh.rotation.x=-Math.PI/2;sh.position.y=.01;car.add(sh);
+var ringM=new THREE.MeshBasicMaterial({color:0xd62839,transparent:true,opacity:.7,side:THREE.DoubleSide});
+var ring=new THREE.Mesh(new THREE.RingGeometry(3.3,3.36,96),ringM);ring.rotation.x=-Math.PI/2;ring.position.y=.005;rig.add(ring);
+var plat=new THREE.Mesh(new THREE.CylinderGeometry(3.15,3.2,.08,72),new THREE.MeshStandardMaterial({color:0x1b212d,metalness:.85,roughness:.22}));plat.position.y=-.045;rig.add(plat);
+
+function fit(){
+  var w=stage.clientWidth||1,h=stage.clientHeight||1,a=w/h,d=Math.max(8.2,9.5/a);
+  R.setSize(w,h);C.aspect=a;C.position.set(0,d*.25,d);C.lookAt(0,1.5,0);C.updateProjectionMatrix();
+  wide=a>1.4;if(!ar)rig.position.x=wide&&!open?1.7:0;
+}
+fit();window.addEventListener('resize',fit);if(window.ResizeObserver)new ResizeObserver(fit).observe(stage);
+
+var ry=-.6,drag=false,lx=0,vis=true,still=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var el=R.domElement;
+el.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;try{el.setPointerCapture(e.pointerId);}catch(_){}});
+el.addEventListener('pointermove',function(e){if(drag){ry+=(e.clientX-lx)*.012;lx=e.clientX;}});
+['pointerup','pointercancel'].forEach(function(n){el.addEventListener(n,function(){drag=false;});});
+if('IntersectionObserver' in window)new IntersectionObserver(function(e){vis=e[0].isIntersecting;}).observe(stage);
+function loop(){
+  if(vis && !xrSession){if(!drag&&!still&&!ar)ry+=open?.003:.006;car.rotation.y=ry;step();R.render(S,C);}
+  requestAnimationFrame(loop);
+}
+loop();
+
+var sws=document.querySelectorAll('.sw');
+sws.forEach(function(s){s.addEventListener('click',function(){
+  paint.color.set(s.dataset.c);ringM.color.set(s.dataset.c);acc=s.dataset.c;
+  document.documentElement.style.setProperty('--acc',s.dataset.c);
+  sws.forEach(function(o){o.setAttribute('aria-pressed',o===s?'true':'false');});
+  document.getElementById('cname').textContent=s.title+'. Drag the car to turn it.';
+});});
+})();
+</script>
+</body>
+</html>
